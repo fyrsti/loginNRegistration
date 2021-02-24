@@ -14,25 +14,35 @@ enum CMD_CODE
 	LOGIN
 };
 
-map<string, CMD_CODE> cmd_translator{
-	pair<string, CMD_CODE>("/help", CMD_CODE::HELP),
-	pair<string, CMD_CODE> ("/l", CMD_CODE::LOGIN),
-	pair<string, CMD_CODE> ("/r", CMD_CODE::REGISTER),
-	pair<string, CMD_CODE>("/exit", CMD_CODE::EXIT),
-	pair<string, CMD_CODE>("/q", CMD_CODE::EXIT)
+map<string, int> cmd_translator{
+	pair<string, int>("/help", HELP),
+	pair<string, int> ("/l", LOGIN),
+	pair<string, int> ("/r", REGISTER),
+	pair<string, int>("/exit", EXIT),
+	pair<string, int>("/q", EXIT)
 };
 
+
+void cmd_help(vector<int> b)
+{
+	for (auto p : cmd_translator)
+	{
+		for (auto code : b)
+		{
+			if (p.second == code)
+				cout << "- " << p.first << endl;
+		}
+	}
+}
 
 
 template <typename T>
 void input(string text, T& destination);
 
-
 bool command_exist(string cmd)
 {
 	return (cmd_translator.find(cmd) != cmd_translator.end() ? true : false);
 }
-
 
 void guest_controller()
 {
@@ -48,7 +58,7 @@ void guest_controller()
 				exit(0);
 				break;
 			case HELP:
-				cout << "Not implemented!" << endl;
+				cmd_help(vector<int>{REGISTER, LOGIN, EXIT});
 				break;
 			case REGISTER:
 				cout << "Not implemented!" << endl;
