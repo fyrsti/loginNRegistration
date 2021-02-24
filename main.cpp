@@ -14,13 +14,15 @@ enum CMD_CODE
 	LOGIN
 };
 
-map<string, int> cmd_translator{
-	pair<string, int>("/help", HELP),
-	pair<string, int> ("/l", LOGIN),
-	pair<string, int> ("/r", REGISTER),
-	pair<string, int>("/exit", EXIT),
-	pair<string, int>("/q", EXIT)
+map<string, CMD_CODE> cmd_translator{
+	pair<string, CMD_CODE>("/help", CMD_CODE::HELP),
+	pair<string, CMD_CODE> ("/l", CMD_CODE::LOGIN),
+	pair<string, CMD_CODE> ("/r", CMD_CODE::REGISTER),
+	pair<string, CMD_CODE>("/exit", CMD_CODE::EXIT),
+	pair<string, CMD_CODE>("/q", CMD_CODE::EXIT)
 };
+
+
 
 template <typename T>
 void input(string text, T& destination);
