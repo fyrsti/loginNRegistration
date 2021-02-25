@@ -6,6 +6,9 @@
 
 using namespace std;
 
+template <typename T>
+void input(string text, T& destination);
+
 enum CMD_CODE
 {
 	EXIT,
@@ -23,6 +26,45 @@ map<string, int> cmd_translator{
 };
 
 
+map<string, string> db;
+
+
+void cmd_register()
+{
+	string username, password;
+
+	while (true)
+	{
+		cout << "[/back - return to the previous instruction]" << endl;
+		while (true)
+		{
+			input("new username: ", username);
+			if (username == "/back")
+				return;
+			else if (db.find(username) != db.end())
+				cout << "This username is already taken!" << endl;
+			else
+				break;
+		}
+
+		while (true)
+		{
+			input("new password: ", password);
+			if (password == "/back")
+				break;
+			if (password.size() >= 3 && password.size() <= 32)
+			{
+				db.emplace(username, password);
+				cout << "-- Success! --" << endl;
+				return;
+			}
+			else
+				cout << "Password must be from 3 to 32 symbols long" << endl;
+		}
+	}
+}
+
+
 void cmd_help(vector<int> b)
 {
 	for (auto p : cmd_translator)
@@ -34,10 +76,6 @@ void cmd_help(vector<int> b)
 		}
 	}
 }
-
-
-template <typename T>
-void input(string text, T& destination);
 
 bool command_exist(string cmd)
 {
@@ -61,7 +99,7 @@ void guest_controller()
 				cmd_help(vector<int>{REGISTER, LOGIN, EXIT});
 				break;
 			case REGISTER:
-				cout << "Not implemented!" << endl;
+				cmd_register();
 				break;
 			case LOGIN:
 				cout << "Not implemented!" << endl;
