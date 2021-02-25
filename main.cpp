@@ -39,18 +39,13 @@ bool _verify_parameters(string LU, string LP)
 	if (db.find(LU) != db.end())
 	{
 		if (db.at(LU) == LP)
-		{
-			cout << " ---- Success ---- " << endl;
 			return true;
-		}
 		cout << "Incorrect password!" << endl;
 		return false;
 	}
 	else
-	{
 		cout << "There's no account with this username." << endl;
-		return false;
-	}
+	return false;
 }
 
 
@@ -62,24 +57,6 @@ string _get_login_parameter(string text)
 		return "0";
 	else
 		return returned;
-}
-
-
-
-void cmd_login()
-{
-	string LUsername, LPassword;
-	while (true)
-	{
-		LUsername = _get_login_parameter("Login username: ");
-		if (LUsername == "0")
-			return;
-		LPassword = _get_login_parameter("Login password: ");
-		if (LPassword != "0")
-			break;
-	}
-	if (_verify_parameters(LUsername, LPassword))
-		user_controller(LUsername);
 }
 
 
@@ -121,6 +98,60 @@ void _create_account(string username, string password)
 }
 
 
+string _get_current_password(string username)
+{
+	return db.at(username);
+}
+
+
+bool _verify_current_password(string current)
+{
+	string inp;
+	input("Input your current password: ", inp);
+	if (inp == "/back" || inp != current)
+		return false;
+	return true;
+
+}
+
+
+string _ask_new_password()
+{
+	string returned;
+	while (true)
+	{
+		input("Input your new password: ", returned);
+		if (returned == "/back")
+			return "/back";
+		if (returned.size() < 3 || returned.size() > 32)
+			cout << "Incorrect password length. Should be between 3 and 32 symbols long." << endl;
+		else
+			break;
+	}
+	return returned;
+}
+
+
+void cmd_login()
+{
+	string LUsername, LPassword;
+	while (true)
+	{
+		LUsername = _get_login_parameter("Login username: ");
+		if (LUsername == "0")
+			return;
+		LPassword = _get_login_parameter("Login password: ");
+		if (LPassword != "0")
+			break;
+	}
+	if (_verify_parameters(LUsername, LPassword))
+	{
+		user_controller(LUsername);
+		cout << "Bye, " << LUsername << endl;
+	}
+}
+
+
 void cmd_register()
 {
 	string username, password;
@@ -149,6 +180,27 @@ void cmd_help(vector<int> b)
 	}
 }
 
+
+bool cmd_changepass(string profile)
+{
+	string current, newpass;
+	current = _get_current_password(profile);
+	if (_verify_current_password(current))
+	{
+		newpass = _ask_new_password();
+		if (newpass == "/back")
+			return false;
+		db[profile] = newpass;
+		return true;
+	}
+	else
+	{
+		cout << "You inputed an incorrect password!" << endl;
+		return false;
+	}
+}
+
+
 bool command_exist(string cmd)
 {
 	return (cmd_translator.find(cmd) != cmd_translator.end() ? true : false);
@@ -170,20 +222,19 @@ void user_controller(string username)
 			case EXIT:
 				exit(0);
 			case HELP:
-				cmd_help({ LOGOUT, CHANGEPASS });
-				break;
-			case LOGOUT:
-				cout << "Not implemented!" << endl;
+				cmd_help({ EXIT, LOGOUT, CHANGEPASS });
 				break;
 			case CHANGEPASS:
-				cout << "Not implemented!" << endl;
-				break;
+				if (cmd_changepass(username))
+					break;
+			case LOGOUT:
+				return;
 			default:
 				cout << "Incorrect command!" << endl;
 			}
 		}
 		else
-			cout << "Incorrect command!" << endl;
+			cout << "Incorrect command! [/help - for more information]" << endl;
 	}
 }
 
@@ -201,7 +252,7 @@ void guest_controller()
 			case EXIT:
 				exit(0);
 			case HELP:
-				cmd_help(vector<int>{REGISTER, LOGIN, EXIT});
+				cmd_help({REGISTER, LOGIN, EXIT});
 				break;
 			case REGISTER:
 				cmd_register();
@@ -214,7 +265,7 @@ void guest_controller()
 			}
 		}
 		else
-			cout << "Incorrect command!" << endl;
+			cout << "Incorrect command!  [/help - for more information]" << endl;
 	}
 }
 
@@ -229,6 +280,7 @@ void input(string text, T& destination)
 
 int main()
 {
+	cout << "Start message" << endl;
 	guest_controller();
 	return 0;
 }
