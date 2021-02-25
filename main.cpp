@@ -49,6 +49,26 @@ bool _verify_parameters(string LU, string LP)
 }
 
 
+bool _validate_password(string password)
+{
+	string forbidden{"/0123456789!@#$%^&*()_+-=\\|/`~,.?<>\"\':;"};
+	if (password.size() < 3 || password.size() > 32)
+	{
+		cout << "Incorrect password length. Should be between from 3 to 32 symbols long." << endl;
+		return false;
+	}
+	for (auto fs : forbidden)
+	{
+		if (password.at(0) == fs)
+		{
+			cout << "Passwords can't start with forbidden symbols like " << fs << endl;
+			cout << "Forbidden start symbols: " << forbidden << endl;
+			return false;
+		}
+	}
+}
+
+
 string _get_login_parameter(string text)
 {
 	string returned;
@@ -84,10 +104,8 @@ string _get_password()
 		input("New password: ", password);
 		if (password == "/back")
 			return "12";
-		if (password.size() >= 3 && password.size() <= 32)
+		if (_validate_password(password))
 			return password;
-		else
-			cout << "Password must be from 3 to 32 symbols long" << endl;
 	}
 }
 
@@ -123,12 +141,9 @@ string _ask_new_password()
 		input("Input your new password: ", returned);
 		if (returned == "/back")
 			return "/back";
-		if (returned.size() < 3 || returned.size() > 32)
-			cout << "Incorrect password length. Should be between 3 and 32 symbols long." << endl;
-		else
-			break;
+		if (_validate_password(returned))
+			return returned;
 	}
-	return returned;
 }
 
 
@@ -226,8 +241,12 @@ void user_controller(string username)
 				break;
 			case CHANGEPASS:
 				if (cmd_changepass(username))
+				{
+					cout << "Great! Your new password is " << db.at(username) << endl;
 					break;
+				}
 			case LOGOUT:
+				system("cls");
 				return;
 			default:
 				cout << "Incorrect command!" << endl;
@@ -256,6 +275,7 @@ void guest_controller()
 				break;
 			case REGISTER:
 				cmd_register();
+				cout << "Great! Registration success!" << endl;
 				break;
 			case LOGIN:
 				cmd_login();
