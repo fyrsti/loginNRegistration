@@ -29,39 +29,57 @@ map<string, int> cmd_translator{
 map<string, string> db;
 
 
+string _get_username()
+{
+	string username;
+	while (true)
+	{
+		input("New username: ", username);
+		if (username == "/back")
+			return "/back";
+		if (db.find(username) != db.end())
+			cout << "This username is already taken!" << endl;
+		else
+			return username;
+	}
+}
+
+
+string _get_password()
+{
+	string password;
+	while (true)
+	{
+		input("New password: ", password);
+		if (password == "/back")
+			return "12";
+		if (password.size() >= 3 && password.size() <= 32)
+			return password;
+		else
+			cout << "Password must be from 3 to 32 symbols long" << endl;
+	}
+}
+
+
+void _create_account(string username, string password)
+{
+	db.emplace(username, password);
+}
+
+
 void cmd_register()
 {
 	string username, password;
-
 	while (true)
 	{
-		cout << "[/back - return to the previous instruction]" << endl;
-		while (true)
-		{
-			input("new username: ", username);
-			if (username == "/back")
-				return;
-			else if (db.find(username) != db.end())
-				cout << "This username is already taken!" << endl;
-			else
-				break;
-		}
-
-		while (true)
-		{
-			input("new password: ", password);
-			if (password == "/back")
-				break;
-			if (password.size() >= 3 && password.size() <= 32)
-			{
-				db.emplace(username, password);
-				cout << "-- Success! --" << endl;
-				return;
-			}
-			else
-				cout << "Password must be from 3 to 32 symbols long" << endl;
-		}
+		username = _get_username();
+		if (username == "/back")
+			return;
+		password = _get_password();
+		if (password.size() >= 3)
+			break;
 	}
+	_create_account(username, password);
 }
 
 
