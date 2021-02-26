@@ -16,9 +16,19 @@ enum CMD_CODE
 	HELP,
 	REGISTER,
 	LOGIN,
+	ALOGIN,
 	LOGOUT,
 	CHANGEPASS
 };
+
+
+enum VALIDATION_RESPONSE
+{
+	CORRECT,
+	INCORRECT,
+	NOT_EXISTED,
+};
+
 
 map<string, int> cmd_translator{
 	pair<string, int>("/help", HELP),
@@ -27,25 +37,26 @@ map<string, int> cmd_translator{
 	pair<string, int>("/exit", EXIT),
 	pair<string, int>("/q", EXIT),
 	pair<string, int>("/logout", LOGOUT),
-	pair<string, int>("/changepassword", CHANGEPASS)
+	pair<string, int>("/changepassword", CHANGEPASS),
+	pair<string, int>("/admin", ALOGIN)
 };
 
 
 map<string, string> db;
+map<string, string> adb{
+	pair<string, string>("fyrsti","123")
+};
 
 
-bool _verify_parameters(string LU, string LP)
+int _verify_parameters(string LU, string LP, map<string, string>& database)
 {
-	if (db.find(LU) != db.end())
+	if (database.find(LU) != database.end())
 	{
-		if (db.at(LU) == LP)
-			return true;
-		cout << "Incorrect password!" << endl;
-		return false;
-	}
-	else
-		cout << "There's no account with this username." << endl;
-	return false;
+		if (database.at(LU) == LP)
+			return CORRECT;
+		return INCORRECT;
+	}	
+	return NOT_EXISTED;
 }
 
 
@@ -159,11 +170,34 @@ void cmd_login()
 		if (LPassword != "0")
 			break;
 	}
-	if (_verify_parameters(LUsername, LPassword))
+	switch (_verify_parameters(LUsername, LPassword, db))
 	{
+	case CORRECT:
 		user_controller(LUsername);
-		cout << "Bye, " << LUsername << endl;
+		break;
+	case INCORRECT:
+		cout << "Incorrect password!" << endl;
+		break;
+	case NOT_EXISTED:
+		cout << "There's no account with this username." << endl;
+		break;
 	}
+}
+
+
+void cmd_alogin()
+{
+	string AUsername, APassword;
+	AUsername = _get_login_parameter("[astro]>>> ");
+	APassword = _get_login_parameter("[astro]>>> ");
+	switch (_verify_parameters(AUsername, APassword, adb))
+	{
+	case CORRECT:
+		cout << "ADMIN!" << endl;
+	default:
+		return;
+	}
+
 }
 
 
@@ -222,6 +256,12 @@ bool command_exist(string cmd)
 }
 
 
+void admin_controller()
+{
+	cout << "Not implemented!" << endl;
+}
+
+
 void user_controller(string username)
 {
 	system("cls");
@@ -245,9 +285,14 @@ void user_controller(string username)
 					cout << "Great! Your new password is " << db.at(username) << endl;
 					break;
 				}
+				return;
 			case LOGOUT:
 				system("cls");
+				cout << "Bye, " << username << endl;
 				return;
+			case ALOGIN:
+				cmd_alogin();
+				break;
 			default:
 				cout << "Incorrect command!" << endl;
 			}
@@ -279,6 +324,9 @@ void guest_controller()
 				break;
 			case LOGIN:
 				cmd_login();
+				break;
+			case ALOGIN:
+				cmd_alogin();
 				break;
 			default:
 				cout << "Incorrect command!" << endl;
