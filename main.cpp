@@ -32,6 +32,7 @@ enum VALIDATION_RESPONSE
 	CORRECT,
 	INCORRECT,
 	NOT_EXISTED,
+	BANNED
 };
 
 
@@ -55,15 +56,21 @@ map<string, map<string, string>> db;
 map<string, map<string, string>> adb;
 
 
-int _verify_parameters(string LU, string LP, map<string, map<string, string>>& database)
+int _verify_parameters(string LU, string LP, map<string, map<string, string>>& d)
 {
-	if (database.find(LU) != database.end())
+	/*
+	if (d.find(LU) != d.end())
 	{
-		if (database.at(LU).at("PASS") == LP)
+		if (d[LU]["PASS"] == LP)
+			if (d[LU]["STATUS"] == "banned")
+				return BANNED;
 			return CORRECT;
 		return INCORRECT;
 	}	
 	return NOT_EXISTED;
+	*/
+
+	return (d.find(LU) != d.end() ? (d[LU]["PASS"] == LP ? (d[LU]["STATUS"] == "banned" ? BANNED : CORRECT) : INCORRECT) : NOT_EXISTED);
 }
 
 
@@ -190,6 +197,9 @@ void cmd_login()
 	case INCORRECT:
 		cout << "Incorrect password!" << endl;
 		break;
+	case BANNED:
+		cout << "Your account is banned! Contact with administrators to unban" << endl;
+		break;
 	case NOT_EXISTED:
 		cout << "There's no account with this username." << endl;
 		break;
@@ -236,7 +246,15 @@ void cmd_showbase()
 
 void _change_status(string username, map<string, map<string, string>>& base, string newstatus)
 {
+	if (base[username]["STATUS"] == newstatus)
+	{
+		cout << "[FAILED] ";
+		cout << username << " has already status: " << newstatus << endl;
+		return;
+	}
 	base[username]["STATUS"] = newstatus;
+	cout << "[SUCCESS] ";
+	cout << "user \"" << username << "\" has got status: " << newstatus << endl;
 }
 
 
