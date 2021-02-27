@@ -258,7 +258,7 @@ void _change_status(string username, map<string, map<string, string>>& base, str
 }
 
 
-void cmd_ban()
+void cmd_switchban(string status)
 {
 	string username;
 	input("Target username: ", username);
@@ -268,10 +268,11 @@ void cmd_ban()
 		cout << "User doesn't exist" << endl;
 		break;
 	default:
-		_change_status(username, db, "banned");
+		_change_status(username, db, status);
 		break;
 	}
 }
+
 
 
 void cmd_register()
@@ -353,8 +354,10 @@ void admin_controller(string aname)
 				cmd_showbase();
 				break;
 			case BAN:
-				cmd_ban();
+				cmd_switchban("banned");
 				break;
+			case UNBAN:
+				cmd_switchban("alive");
 			default:
 				break;
 			}
