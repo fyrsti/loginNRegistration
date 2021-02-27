@@ -20,7 +20,10 @@ enum CMD_CODE
 	LOGIN,
 	ALOGIN,
 	LOGOUT,
-	CHANGEPASS
+	CHANGEPASS,
+	SHOWUSERBASE,
+	BAN,
+	UNBAN
 };
 
 
@@ -40,7 +43,10 @@ map<string, int> cmd_translator{
 	pair<string, int>("/q", EXIT),
 	pair<string, int>("/logout", LOGOUT),
 	pair<string, int>("/changepassword", CHANGEPASS),
-	pair<string, int>("/admin", ALOGIN)
+	pair<string, int>("/admin", ALOGIN),
+	pair<string, int>("/showbase", SHOWUSERBASE),
+	pair<string, int>("/ban", BAN),
+	pair<string, int>("/unban", UNBAN)
 };
 
 
@@ -202,6 +208,54 @@ void cmd_alogin()
 }
 
 
+void _visualize_user(string username, vector<string> params)
+{
+	cout << "- ID:\t" << params.at(1) << endl;
+	cout << "- USERNAME:\t" << username << endl;
+	cout << "- PASSWORD:\t" << params.at(0) << endl;
+	cout << "- STATUS:\t" << params.at(2) << endl;
+	cout << "------------------------------\n";
+}
+
+
+vector<string> _unparse_user_parameters(string username)
+{
+	auto temp = db[username];
+	return { temp["PASS"], temp["ID"], temp["STATUS"] };
+}
+
+
+void cmd_showbase()
+{
+	for (auto user : db)
+	{
+		_visualize_user(user.first, _unparse_user_parameters(user.first));
+	}
+}
+
+
+void _change_status(string username, map<string, map<string, string>>& base, string newstatus)
+{
+	base[username]["STATUS"] = newstatus;
+}
+
+
+void cmd_ban()
+{
+	string username;
+	input("Target username: ", username);
+	switch (_verify_parameters(username, "", db))
+	{
+	case NOT_EXISTED:
+		cout << "User doesn't exist" << endl;
+		break;
+	default:
+		_change_status(username, db, "banned");
+		break;
+	}
+}
+
+
 void cmd_register()
 {
 	string username, password;
@@ -272,11 +326,17 @@ void admin_controller(string aname)
 			case EXIT:
 				exit(0);
 			case HELP:
-				cmd_help({ EXIT, ALOGIN });
+				cmd_help({ EXIT, ALOGIN, SHOWUSERBASE, BAN });
 				break;
 			case ALOGIN:
 				system("cls");
 				return;
+			case SHOWUSERBASE:
+				cmd_showbase();
+				break;
+			case BAN:
+				cmd_ban();
+				break;
 			default:
 				break;
 			}
