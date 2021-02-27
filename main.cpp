@@ -9,6 +9,8 @@ using namespace std;
 template <typename T>
 void input(string text, T& destination);
 void user_controller(string username);
+void admin_controller(string aname);
+
 
 enum CMD_CODE
 {
@@ -42,17 +44,16 @@ map<string, int> cmd_translator{
 };
 
 
-map<string, string> db;
-map<string, string> adb{
-	pair<string, string>("fyrsti","123")
-};
+map<string, map<string, string>> db;
+
+map<string, map<string, string>> adb;
 
 
-int _verify_parameters(string LU, string LP, map<string, string>& database)
+int _verify_parameters(string LU, string LP, map<string, map<string, string>>& database)
 {
 	if (database.find(LU) != database.end())
 	{
-		if (database.at(LU) == LP)
+		if (database.at(LU).at("PASS") == LP)
 			return CORRECT;
 		return INCORRECT;
 	}	
@@ -62,7 +63,7 @@ int _verify_parameters(string LU, string LP, map<string, string>& database)
 
 bool _validate_password(string password)
 {
-	string forbidden{"/0123456789!@#$%^&*()_+-=\\|/`~,.?<>\"\':;"};
+	string forbidden{"/\\|/`~?<>\"\'"};
 	if (password.size() < 3 || password.size() > 32)
 	{
 		cout << "Incorrect password length. Should be between from 3 to 32 symbols long." << endl;
@@ -123,13 +124,18 @@ string _get_password()
 
 void _create_account(string username, string password)
 {
-	db.emplace(username, password);
+	static int id{ 0 };
+	db.emplace(username, map<string, string>{
+		pair<string, string>("PASS", password),
+		pair<string, string>("ID", to_string(id)),
+		pair<string, string>("STATUS", "alive") 
+	});
 }
 
 
 string _get_current_password(string username)
 {
-	return db.at(username);
+	return db.at(username).at("PASS");
 }
 
 
@@ -188,16 +194,11 @@ void cmd_login()
 void cmd_alogin()
 {
 	string AUsername, APassword;
-	AUsername = _get_login_parameter("[astro]>>> ");
-	APassword = _get_login_parameter("[astro]>>> ");
-	switch (_verify_parameters(AUsername, APassword, adb))
-	{
-	case CORRECT:
-		cout << "ADMIN!" << endl;
-	default:
-		return;
-	}
-
+	AUsername = _get_login_parameter("[A] >>> ");
+	APassword = _get_login_parameter("[A] >>> ");
+	if (_verify_parameters(AUsername, APassword, adb) == CORRECT)
+		admin_controller(AUsername);
+	return;
 }
 
 
@@ -214,6 +215,7 @@ void cmd_register()
 			break;
 	}
 	_create_account(username, password);
+	cout << "Great! Registration success!" << endl;
 }
 
 
@@ -239,7 +241,7 @@ bool cmd_changepass(string profile)
 		newpass = _ask_new_password();
 		if (newpass == "/back")
 			return false;
-		db[profile] = newpass;
+		db[profile]["PASS"] = newpass;
 		return true;
 	}
 	else
@@ -256,8 +258,35 @@ bool command_exist(string cmd)
 }
 
 
-void admin_controller()
+void admin_controller(string aname)
 {
+	cout << " ----- [ADMIN PANEL HAS STARTED] ----- " << endl;
+	string command;
+	while (true)
+	{
+		input("[A] >>> ", command);
+		if (command_exist(command))
+		{
+			switch (cmd_translator.at(command))
+			{
+			case EXIT:
+				exit(0);
+			case HELP:
+				cmd_help({ EXIT, ALOGIN });
+				break;
+			case ALOGIN:
+				system("cls");
+				return;
+			default:
+				break;
+			}
+		}
+		else
+		{
+			cout << "Incorrect command! Command list below" << endl;
+			cmd_help({ EXIT });
+		}
+	}
 	cout << "Not implemented!" << endl;
 }
 
@@ -269,7 +298,7 @@ void user_controller(string username)
 	string command;
 	while (true)
 	{
-		input(username + ">>> ", command);
+		input(username + " >>> ", command);
 		if (command_exist(command))
 		{
 			switch (cmd_translator.at(command))
@@ -282,7 +311,7 @@ void user_controller(string username)
 			case CHANGEPASS:
 				if (cmd_changepass(username))
 				{
-					cout << "Great! Your new password is " << db.at(username) << endl;
+					cout << "Great! Your new password is " << db.at(username).at("PASS") << endl;
 					break;
 				}
 				return;
@@ -320,7 +349,6 @@ void guest_controller()
 				break;
 			case REGISTER:
 				cmd_register();
-				cout << "Great! Registration success!" << endl;
 				break;
 			case LOGIN:
 				cmd_login();
@@ -348,6 +376,11 @@ void input(string text, T& destination)
 
 int main()
 {
+	adb.emplace("fyrsti", map<string, string>{
+		pair<string, string>("PASS", "123"),
+		pair<string, string>("ID", "0"),
+		pair<string, string>("STATUS", "admin")
+	});
 	cout << "Start message" << endl;
 	guest_controller();
 	return 0;
